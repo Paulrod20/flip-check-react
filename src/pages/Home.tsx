@@ -8,14 +8,24 @@ function Home() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GameResult[]>([])
   const [hasSearched, setHasSearched] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    if (!query.trim()) return 
+    setIsLoading(true)
+    setHasSearched(false)
+    setResults([])
+
+    // Simulating API call delay - replace with real API call later
+    await new Promise(resolve => setTimeout(resolve, 800))
+
     const normalizedQuery = query.trim().toLowerCase()
     const filtered = mockResults.filter(game =>
       game.title.toLowerCase().startsWith(normalizedQuery)
     )
     setResults(filtered)
     setHasSearched(true)
+    setIsLoading(false)
   }
 
   return (
@@ -33,7 +43,17 @@ function Home() {
         onSearch={handleSearch}
         games={mockResults}
       />
-      {hasSearched && results.length === 0 && (
+
+      {isLoading && (
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="w-8 h-8 rounded-full border-4 border-white border-t-transparent animate-spin" />
+          <p className="text-sm" style={{ color: 'var(--color-white)' }}>
+            Searching...
+          </p>
+        </div>
+      )}
+
+      {hasSearched && !isLoading && results.length === 0 && (
         <div className="w-full max-w-xl px-4 mt-8 text-center">
           <p className="text-lg font-medium"
             style={{ color: 'var(--color-white)' }}>
@@ -46,7 +66,7 @@ function Home() {
         </div>
       )}
 
-      {results.length > 0 && (
+      {results.length > 0 && !isLoading && (
         <div className="w-full max-w-xl px-4 mt-8">
           {results.map(game => (
             <ResultCard key={game.id} game={game} />
