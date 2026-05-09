@@ -1,11 +1,18 @@
 import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
+import ResultCard from '../components/ResultCard'
+import { mockResults } from '../data/mockResults'
+import type { GameResult } from '../data/mockResults'
 
 function Home() {
   const [query, setQuery] = useState('')
+  const [results, setResults] = useState<GameResult[]>([])
 
   const handleSearch = () => {
-    console.log('Searching for:', query)
+    const filtered = mockResults.filter(game =>
+      game.title.toLowerCase().includes(query.toLowerCase())
+    )
+    setResults(filtered)
   }
 
   return (
@@ -18,6 +25,14 @@ function Home() {
       </h1>
 
       <SearchBar query={query} setQuery={setQuery} onSearch={handleSearch} />
+
+      {results.length > 0 && (
+        <div className="w-full max-w-xl px-4 mt-8">
+          {results.map(game => (
+            <ResultCard key={game.id} game={game} />
+          ))}
+        </div>
+      )}
 
     </div>
   )
