@@ -7,6 +7,7 @@ import type { GameResult } from '../data/mockResults'
 function Home() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GameResult[]>([])
+  const [hasSearched, setHasSearched] = useState(false)
 
   const handleSearch = () => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -14,6 +15,7 @@ function Home() {
       game.title.toLowerCase().startsWith(normalizedQuery)
     )
     setResults(filtered)
+    setHasSearched(true)
   }
 
   return (
@@ -31,6 +33,18 @@ function Home() {
         onSearch={handleSearch}
         games={mockResults}
       />
+      {hasSearched && results.length === 0 && (
+        <div className="w-full max-w-xl px-4 mt-8 text-center">
+          <p className="text-lg font-medium"
+            style={{ color: 'var(--color-white)' }}>
+            No results found for "{query}"
+          </p>
+          <p className="text-sm mt-2"
+            style={{ color: 'var(--color-highlight)' }}>
+            Try searching for a different game or console.
+          </p>
+        </div>
+      )}
 
       {results.length > 0 && (
         <div className="w-full max-w-xl px-4 mt-8">
@@ -39,7 +53,6 @@ function Home() {
           ))}
         </div>
       )}
-
     </div>
   )
 }
