@@ -29,12 +29,12 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center"
+    <div className="min-h-screen flex flex-col items-center justify-center pt-24"
       style={{ backgroundColor: 'var(--color-background)' }}>
 
       <h1 className="text-6xl font-bold mb-8 tracking-tight"
         style={{ color: 'var(--color-white)' }}>
-        FlipCheck 🎮
+        How much is it worth?
       </h1>
 
       <SearchBar
