@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
     })
 
-    // Listen for auth changes (login, logout, etc.)
+    // Listen for auth changes (sign in, logout, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session)
@@ -34,8 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+  const signUp = async (name: string, email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          full_name: name
+        }
+      }
+    })
     if (error) throw error
   }
 

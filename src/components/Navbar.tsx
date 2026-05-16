@@ -1,23 +1,25 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 
 function Navbar() {
   const { user, signOut } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <nav
       className="w-full fixed top-0 left-0 z-50 px-8 py-4 flex items-center justify-between"
       style={{ backgroundColor: 'var(--color-background)' }}>
 
-      {/* Logo */}
       <div
-        className="text-xl font-bold cursor-pointer"
+        className="flex items-center gap-1 text-xl font-bold cursor-pointer self-start"
+        onClick={() => navigate('/')}
         style={{ color: 'var(--color-white)' }}>
-        FlipCheck 🎮
+        <span>FlipCheck</span>
+        <span style={{ position: 'relative', top: '1px' }}>🎮</span>
       </div>
 
-      {/* Nav Links + Profile grouped together on the right */}
       <div className="flex items-center gap-8">
         {['Platforms', 'Games', 'About', 'Donate'].map(link => (
           <span
@@ -28,7 +30,6 @@ function Navbar() {
           </span>
         ))}
 
-        {/* Profile Circle */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -55,17 +56,19 @@ function Navbar() {
                     onClick={signOut}
                     className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
                     style={{ color: 'var(--color-text)' }}>
-                    Logout
+                    Sign Out
                   </button>
                 </>
               ) : (
                 <>
                   <button
+                    onClick={() => { navigate('/signin'); setDropdownOpen(false) }}
                     className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
                     style={{ color: 'var(--color-text)' }}>
-                    Login
+                    Sign In
                   </button>
                   <button
+                    onClick={() => { navigate('/signin?tab=register'); setDropdownOpen(false) }}
                     className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
                     style={{ color: 'var(--color-text)' }}>
                     Sign Up
