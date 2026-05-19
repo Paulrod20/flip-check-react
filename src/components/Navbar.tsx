@@ -30,54 +30,47 @@ function Navbar() {
           </span>
         ))}
 
-        <div className="relative">
+        {user ? (
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+              style={{
+                backgroundColor: 'var(--color-secondary)',
+                color: 'var(--color-white)',
+              }}>
+              {user.user_metadata?.full_name?.[0].toUpperCase() || user.email?.[0].toUpperCase()}
+            </button>
+
+            {dropdownOpen && (
+              <div
+                className="absolute right-0 mt-2 w-40 rounded-xl shadow-lg overflow-hidden"
+                style={{ backgroundColor: 'var(--color-white)' }}>
+                <div
+                  className="px-4 py-2 text-xs truncate"
+                  style={{ color: 'var(--color-secondary)' }}>
+                  {user.user_metadata?.full_name || user.email}
+                </div>
+                <button
+                  onClick={signOut}
+                  className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
+                  style={{ color: 'var(--color-text)' }}>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
           <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+            onClick={() => navigate('/signin')}
+            className="px-5 py-2 rounded-full text-sm font-semibold search-btn"
             style={{
-              backgroundColor: 'var(--color-secondary)',
+              backgroundColor: 'var(--color-primary)',
               color: 'var(--color-white)',
             }}>
-            {user ? user.email?.[0].toUpperCase() : '?'}
+            Sign In
           </button>
-
-          {dropdownOpen && (
-            <div
-              className="absolute right-0 mt-2 w-40 rounded-xl shadow-lg overflow-hidden"
-              style={{ backgroundColor: 'var(--color-white)' }}>
-              {user ? (
-                <>
-                  <div
-                    className="px-4 py-2 text-xs truncate"
-                    style={{ color: 'var(--color-secondary)' }}>
-                    {user.email}
-                  </div>
-                  <button
-                    onClick={signOut}
-                    className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
-                    style={{ color: 'var(--color-text)' }}>
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => { navigate('/signin'); setDropdownOpen(false) }}
-                    className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
-                    style={{ color: 'var(--color-text)' }}>
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => { navigate('/signin?tab=register'); setDropdownOpen(false) }}
-                    className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
-                    style={{ color: 'var(--color-text)' }}>
-                    Sign Up
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </nav>
   )
