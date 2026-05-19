@@ -46,11 +46,12 @@ function Navbar() {
               <div
                 className="absolute right-0 mt-2 w-40 rounded-xl shadow-lg overflow-hidden"
                 style={{ backgroundColor: 'var(--color-white)' }}>
-                <div
-                  className="px-4 py-2 text-xs truncate"
-                  style={{ color: 'var(--color-secondary)' }}>
-                  {user.user_metadata?.full_name || user.email}
-                </div>
+                <button
+                  onClick={() => { navigate('/profile'); setDropdownOpen(false) }}
+                  className="w-full text-left px-4 py-2 text-sm hover:opacity-70"
+                  style={{ color: 'var(--color-text)' }}>
+                  Profile
+                </button>
                 <button
                   onClick={signOut}
                   className="w-full text-left px-4 py-2 text-sm hover:opacity-70"

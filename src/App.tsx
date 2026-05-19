@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Signin from './pages/Signin'
 import Navbar from './components/Navbar'
+import Profile from './pages/Profile'
 
 function Layout() {
   const location = useLocation()
@@ -13,6 +14,7 @@ function Layout() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<Signin />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </>
   )
