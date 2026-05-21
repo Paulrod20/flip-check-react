@@ -1,49 +1,44 @@
-import type { GameResult } from '../data/mockResults'
+import type { EbayListing } from '../pages/Home'
 
 interface ResultCardProps {
-  game: GameResult
+  listing: EbayListing
 }
 
-function ResultCard({ game }: ResultCardProps) {
-  const lowestPrice = Math.min(...game.prices.map(p => p.price))
-
+function ResultCard({ listing }: ResultCardProps) {
   return (
-    <div className="w-full rounded-2xl p-6 shadow-md mb-4"
-      style={{ backgroundColor: 'var(--color-white)' }}>
+    <a
+      href={listing.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-full rounded-2xl p-6 shadow-md mb-4 flex items-center gap-4 no-underline hover:opacity-90 transition-opacity"
+      style={{ backgroundColor: 'var(--color-white)', display: 'flex' }}>
 
-      <div className="mb-4">
-        <h2 className="text-xl font-bold"
+      {listing.image && (
+        <img
+          src={listing.image}
+          alt={listing.title}
+          className="w-16 h-16 object-contain rounded-lg flex-shrink-0"
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
+      )}
+
+      <div className="flex-1 min-w-0">
+        <h2 className="text-base font-semibold truncate"
           style={{ color: 'var(--color-text)' }}>
-          {game.title}
+          {listing.title}
         </h2>
-        <p className="text-sm"
+        <p className="text-sm mt-1"
           style={{ color: 'var(--color-secondary)' }}>
-          {game.platform}
+          {listing.condition} · {listing.source}
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
-        {game.prices.map((price) => (
-          <div key={price.source}
-            className="flex items-center justify-between px-4 py-2 rounded-xl"
-            style={{
-              backgroundColor: price.price === lowestPrice
-                ? 'var(--color-secondary)'
-                : 'var(--color-highlight)',
-            }}>
-            <span className="font-medium"
-              style={{ color: 'var(--color-text)' }}>
-              {price.source}
-            </span>
-            <span className="font-bold"
-              style={{ color: 'var(--color-primary)' }}>
-              ${price.price.toFixed(2)}
-            </span>
-          </div>
-        ))}
-      </div>
+      <span className="text-lg font-bold flex-shrink-0"
+        style={{ color: 'var(--color-primary)' }}>
+        ${listing.price.toFixed(2)}
+      </span>
 
-    </div>
+    </a>
   )
 }
 

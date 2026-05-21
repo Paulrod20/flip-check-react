@@ -2,30 +2,40 @@ import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import ResultCard from '../components/ResultCard'
 import { mockResults } from '../data/mockResults'
-import type { GameResult } from '../data/mockResults'
+
+export interface EbayListing {
+  source: string
+  title: string
+  price: number
+  condition: string
+  url: string
+  image: string
+}
 
 function Home() {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<GameResult[]>([])
+  const [results, setResults] = useState<EbayListing[]>([])
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSearch = async () => {
     if (!query.trim()) return 
+
     setIsLoading(true)
     setHasSearched(false)
     setResults([])
 
-    // Simulating API call delay - replace with real API call later
-    await new Promise(resolve => setTimeout(resolve, 800))
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/search?query=${encodeURIComponent(query)}`)
+      const data = await response.json()
+      setResults(data.results)
+    } catch (error) {
+      console.error('Search failed:', error)
+    } finally {
+      setHasSearched(true)
+      setIsLoading(false)
+    }
 
-    const normalizedQuery = query.trim().toLowerCase()
-    const filtered = mockResults.filter(game =>
-      game.title.toLowerCase().startsWith(normalizedQuery)
-    )
-    setResults(filtered)
-    setHasSearched(true)
-    setIsLoading(false)
   }
 
   return (
@@ -68,8 +78,8 @@ function Home() {
 
       {results.length > 0 && !isLoading && (
         <div className="w-full max-w-xl px-4 mt-8">
-          {results.map(game => (
-            <ResultCard key={game.id} game={game} />
+          {results.map((listing, i) => (
+            <ResultCard key={i} listing={listing} />
           ))}
         </div>
       )}
