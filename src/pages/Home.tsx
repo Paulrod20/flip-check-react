@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import SearchBar from '../components/SearchBar'
 import ResultCard from '../components/ResultCard'
 import { mockResults } from '../data/mockResults'
@@ -18,24 +18,48 @@ function Home() {
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  const activeControllerRef = useRef<AbortController | null>(null)
+  const latestRequestIdRef = useRef(0)
+
   const handleSearch = async () => {
-    if (!query.trim()) return 
+    const q = query.trim()
+    if (q.length < 3) return
+
+    if (activeControllerRef.current) {
+      activeControllerRef.current.abort()
+    }
+
+    const controller = new AbortController()
+    activeControllerRef.current = controller
+
+    const requestId = latestRequestIdRef.current + 1
+    latestRequestIdRef.current = requestId
 
     setIsLoading(true)
     setHasSearched(false)
     setResults([])
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/search?query=${encodeURIComponent(query)}`)
+      const response = await fetch(
+        `http://localhost:8000/search?query=${encodeURIComponent(q)}`,
+        { signal: controller.signal }
+      )
+      if (!response.ok) throw new Error('Search failed')
       const data = await response.json()
-      setResults(data.results)
-    } catch (error) {
+
+      if (requestId !== latestRequestIdRef.current) return
+
+      setResults(Array.isArray(data) ? data : data.results || [])
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') return
+      if (requestId !== latestRequestIdRef.current) return
       console.error('Search failed:', error)
     } finally {
-      setHasSearched(true)
-      setIsLoading(false)
+      if (requestId === latestRequestIdRef.current) {
+        setHasSearched(true)
+        setIsLoading(false)
+      }
     }
-
   }
 
   return (
