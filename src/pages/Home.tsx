@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
 import SearchBar from '../components/SearchBar'
 import ResultCard from '../components/ResultCard'
-import { mockResults } from '../data/mockResults'
+import { resolvePlatform } from '../data/platforms'
+import { resolveGame } from '../data/games'
+import { API_BASE_URL } from '../lib/api'
 
 export interface EbayListing {
   source: string
@@ -17,13 +19,24 @@ function Home() {
   const [results, setResults] = useState<EbayListing[]>([])
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const activeControllerRef = useRef<AbortController | null>(null)
   const latestRequestIdRef = useRef(0)
 
   const handleSearch = async () => {
     const q = query.trim()
-    if (q.length < 3) return
+    if (q.length < 3) {
+      setValidationError('Enter at least 3 characters to search.')
+      setHasSearched(false)
+      setResults([])
+      return
+    }
+
+    const platform = resolvePlatform(q)
+    const game = resolveGame(q)
+    const searchQuery = platform ?? game?.title ?? q
+    const platformFilter = platform ? undefined : game?.platform
 
     if (activeControllerRef.current) {
       activeControllerRef.current.abort()
@@ -35,25 +48,38 @@ function Home() {
     const requestId = latestRequestIdRef.current + 1
     latestRequestIdRef.current = requestId
 
+    setValidationError(null)
     setIsLoading(true)
     setHasSearched(false)
     setResults([])
 
     try {
-      const response = await fetch(
-        `http://localhost:8000/search?query=${encodeURIComponent(q)}`,
-        { signal: controller.signal }
-      )
-      if (!response.ok) throw new Error('Search failed')
-      const data = await response.json()
+      const url = new URL(`${API_BASE_URL}/search`)
+      url.searchParams.set('query', searchQuery)
+      if (platformFilter) {
+        url.searchParams.set('platform', platformFilter)
+      }
+
+      const response = await fetch(url.toString(), { signal: controller.signal })
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        const detail = typeof data?.detail === 'string'
+          ? data.detail
+          : 'Search failed. Check that the backend is running and eBay credentials are set.'
+        throw new Error(detail)
+      }
 
       if (requestId !== latestRequestIdRef.current) return
 
-      setResults(Array.isArray(data) ? data : data.results || [])
+      setResults(Array.isArray(data) ? data : data?.results || [])
     } catch (error: unknown) {
       if (error instanceof Error && error.name === 'AbortError') return
       if (requestId !== latestRequestIdRef.current) return
       console.error('Search failed:', error)
+      setValidationError(
+        error instanceof Error ? error.message : 'Search failed. Please try again.'
+      )
     } finally {
       if (requestId === latestRequestIdRef.current) {
         setHasSearched(true)
@@ -73,10 +99,21 @@ function Home() {
 
       <SearchBar
         query={query}
-        setQuery={setQuery}
+        setQuery={(value) => {
+          setQuery(value)
+          setValidationError(null)
+        }}
         onSearch={handleSearch}
-        games={mockResults}
       />
+
+      {validationError && (
+        <div className="w-full max-w-xl px-4 mt-8 text-center">
+          <p className="text-lg font-medium"
+            style={{ color: 'var(--color-white)' }}>
+            {validationError}
+          </p>
+        </div>
+      )}
 
       {isLoading && (
         <div className="mt-8 flex flex-col items-center gap-2">
@@ -87,7 +124,7 @@ function Home() {
         </div>
       )}
 
-      {hasSearched && !isLoading && results.length === 0 && (
+      {hasSearched && !isLoading && !validationError && results.length === 0 && (
         <div className="w-full max-w-xl px-4 mt-8 text-center">
           <p className="text-lg font-medium"
             style={{ color: 'var(--color-white)' }}>

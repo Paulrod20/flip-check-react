@@ -1,3 +1,26 @@
+export function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function resolvePlatform(query: string): string | null {
+  const normalizedQuery = normalizeText(query)
+  if (!normalizedQuery) return null
+
+  const sorted = [...platforms].sort((a, b) => b.length - a.length)
+  for (const platform of sorted) {
+    if (normalizeText(platform) === normalizedQuery) {
+      return platform
+    }
+  }
+  return null
+}
+
 export const platforms: string[] = [
     // Microsoft
     'Xbox',

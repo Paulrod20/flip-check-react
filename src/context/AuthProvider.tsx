@@ -8,17 +8,17 @@ import { AuthContext } from './auth-context'
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(Boolean(supabase))
 
   useEffect(() => {
-    // Get initial session
+    if (!supabase) return
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
     })
 
-    // Listen for auth changes (sign in, logout, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session)
@@ -30,24 +30,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) throw new Error('Sign in is not configured.')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
   }
 
   const signUp = async (name: string, email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ 
-      email, 
+    if (!supabase) throw new Error('Sign up is not configured.')
+    const { error } = await supabase.auth.signUp({
+      email,
       password,
       options: {
         data: {
-          full_name: name
-        }
-      }
+          full_name: name,
+        },
+      },
     })
     if (error) throw error
   }
 
   const signOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
   }
 

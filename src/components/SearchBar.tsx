@@ -1,30 +1,43 @@
 import { useState } from 'react'
 import { platforms } from '../data/platforms'
-import type { GameResult } from '../data/mockResults'
+import { games } from '../data/games'
 
 interface SearchBarProps {
   query: string
   setQuery: (value: string) => void
   onSearch: () => void
-  games: GameResult[]
 }
 
-function SearchBar({ query, setQuery, onSearch, games }: SearchBarProps) {
+type Suggestion = {
+  label: string
+  type: 'Platform' | 'Game'
+}
+
+function rankSuggestion(label: string, normalizedQuery: string): number {
+  const lower = label.toLowerCase()
+  if (lower.startsWith(normalizedQuery)) return 0
+  if (lower.includes(normalizedQuery)) return 1
+  return 2
+}
+
+function SearchBar({ query, setQuery, onSearch }: SearchBarProps) {
   const [showDropdown, setShowDropdown] = useState(false)
   const normalizedQuery = query.trim().toLowerCase()
 
-  const filteredPlatforms = platforms.filter(p =>
-    p.toLowerCase().startsWith(normalizedQuery)
-  )
-  
-  const filteredGames = games.filter(g =>
-    g.title.toLowerCase().startsWith(normalizedQuery)
-  )
-
-  const suggestions = [
-    ...filteredPlatforms.map(p => ({ label: p, type: 'Platform' })),
-    ...filteredGames.map(g => ({ label: g.title, type: 'Game' })),
-  ].slice(0, 8)
+  const suggestions: Suggestion[] = [
+    ...platforms
+      .filter(p => p.toLowerCase().includes(normalizedQuery))
+      .map(p => ({ label: p, type: 'Platform' as const })),
+    ...games
+      .filter(g => g.title.toLowerCase().includes(normalizedQuery))
+      .map(g => ({ label: g.title, type: 'Game' as const })),
+  ]
+    .sort((a, b) => {
+      const rankDiff = rankSuggestion(a.label, normalizedQuery) - rankSuggestion(b.label, normalizedQuery)
+      if (rankDiff !== 0) return rankDiff
+      return a.label.localeCompare(b.label)
+    })
+    .slice(0, 8)
 
   const handleSelect = (label: string) => {
     setQuery(label)
@@ -70,21 +83,21 @@ function SearchBar({ query, setQuery, onSearch, games }: SearchBarProps) {
       {showDropdown && suggestions.length > 0 && (
         <div className="absolute left-4 right-4 mt-2 rounded-2xl shadow-lg overflow-hidden z-10"
           style={{ backgroundColor: 'var(--color-white)' }}>
-          {suggestions.map((s, index) => (
+          {suggestions.map((suggestion) => (
             <div
-              key={index}
+              key={`${suggestion.type}-${suggestion.label}`}
               className="flex items-center justify-between px-6 py-3 cursor-pointer hover:opacity-80"
               style={{ backgroundColor: 'var(--color-white)' }}
-              onMouseDown={() => handleSelect(s.label)}>
-              <span style={{ color: 'var(--color-text)' }}>{s.label}</span>
+              onMouseDown={() => handleSelect(suggestion.label)}>
+              <span style={{ color: 'var(--color-text)' }}>{suggestion.label}</span>
               <span className="text-xs px-2 py-1 rounded-full"
                 style={{
-                  backgroundColor: s.type === 'Platform'
+                  backgroundColor: suggestion.type === 'Platform'
                     ? 'var(--color-secondary)'
                     : 'var(--color-highlight)',
                   color: 'var(--color-text)',
                 }}>
-                {s.type}
+                {suggestion.type}
               </span>
             </div>
           ))}

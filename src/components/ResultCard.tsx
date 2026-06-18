@@ -1,4 +1,5 @@
 import type { EbayListing } from '../pages/Home'
+import { API_BASE_URL } from '../lib/api'
 
 interface ResultCardProps {
   listing: EbayListing
@@ -15,7 +16,7 @@ function ResultCard({ listing }: ResultCardProps) {
 
       {listing.image && (
         <img
-          src={`http://127.0.0.1:8000/image-proxy?url=${encodeURIComponent(listing.image)}`}
+          src={`${API_BASE_URL}/image-proxy?url=${encodeURIComponent(listing.image)}`}
           alt={listing.title}
           className="w-16 h-16 object-contain rounded-lg flex-shrink-0"
           onError={(e) => { e.currentTarget.style.display = 'none' }}
